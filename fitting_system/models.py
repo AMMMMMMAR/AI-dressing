@@ -105,7 +105,8 @@ class Inventory(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name_plural = 'Inventories'
+        verbose_name = 'Clothing product'
+        verbose_name_plural = 'Clothing products'
     
     def __str__(self):
         return f"{self.product_variant} - Stock: {self.quantity}"
