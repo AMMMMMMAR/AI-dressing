@@ -49,26 +49,6 @@
     </div>
     {% endif %}
 
-    <!-- Out of Stock Alert -->
-    {% if out_of_stock %}
-    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-8">
-        <h2 class="text-xl font-bold text-red-900 mb-4">🔴 Out of Stock</h2>
-        <div class="space-y-2">
-            {% for variant in out_of_stock %}
-            <div class="flex items-center justify-between bg-white rounded-lg p-4">
-                <div>
-                    <p class="font-medium text-gray-900">{{ variant.product.name }}</p>
-                    <p class="text-sm text-gray-600">Size: {{ variant.size.name }} | Color: {{ variant.color.name }}</p>
-                </div>
-                <span class="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-bold">
-                    Out of Stock
-                </span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
     <!-- All Inventory -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="p-6 border-b border-gray-200">
@@ -78,16 +58,11 @@
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Product</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Quantity</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -100,18 +75,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.size.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-full border"
-                                    style="background-color: {{ variant.color.hex_code }};"></div>
+                                <div class="w-4 h-4 rounded-full border" style="background-color: {{ variant.color.hex_code }};"></div>
                                 <span class="text-sm text-gray-900">{{ variant.color.name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{
-                            variant.inventory.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ variant.inventory.quantity }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                In Stock
-                            </span>
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">In Stock</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -124,18 +94,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.size.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-full border"
-                                    style="background-color: {{ variant.color.hex_code }};"></div>
+                                <div class="w-4 h-4 rounded-full border" style="background-color: {{ variant.color.hex_code }};"></div>
                                 <span class="text-sm text-gray-900">{{ variant.color.name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-yellow-900">{{
-                            variant.inventory.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-yellow-900">{{ variant.inventory.quantity }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Low Stock
-                            </span>
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Low Stock</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -148,17 +113,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.size.name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                <div class="w-4 h-4 rounded-full border"
-                                    style="background-color: {{ variant.color.hex_code }};"></div>
+                                <div class="w-4 h-4 rounded-full border" style="background-color: {{ variant.color.hex_code }};"></div>
                                 <span class="text-sm text-gray-900">{{ variant.color.name }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-900">0</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Out of Stock
-                            </span>
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Out of Stock</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -168,8 +129,7 @@
     </div>
 
     <div class="mt-8 text-center">
-        <a href="/admin/fitting_system/inventory/"
-            class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
+        <a href="{% url 'admin:fitting_system_inventory_changelist' %}" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
             Manage Inventory in Admin Panel
         </a>
     </div>

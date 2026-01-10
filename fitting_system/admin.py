@@ -60,9 +60,13 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 @admin.register(Inventory)
 class InventoryAdmin(admin.ModelAdmin):
-    list_display = ['product_variant', 'quantity', 'low_stock_threshold', 'get_status', 'last_updated']
+    list_display = ['product_variant', 'get_quantity_display', 'low_stock_threshold', 'get_status', 'last_updated']
     list_filter = ['last_updated']
     search_fields = ['product_variant__product__name', 'product_variant__sku']
+    
+    def get_quantity_display(self, obj):
+        return f"{obj.quantity} units"
+    get_quantity_display.short_description = 'Quantity'
     
     def get_status(self, obj):
         if obj.is_out_of_stock:

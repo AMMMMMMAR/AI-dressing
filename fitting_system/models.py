@@ -100,7 +100,7 @@ class ProductVariant(models.Model):
 class Inventory(models.Model):
     """Stock tracking for each variant"""
     product_variant = models.OneToOneField(ProductVariant, on_delete=models.CASCADE, related_name='inventory')
-    quantity = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0, help_text="Number of items currently in stock for this product variant")
     low_stock_threshold = models.IntegerField(default=5)
     last_updated = models.DateTimeField(auto_now=True)
     
