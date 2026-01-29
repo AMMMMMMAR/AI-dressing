@@ -7,29 +7,36 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">Virtual Body Scan</h1>
-        <p class="text-xl text-gray-600">Follow the instructions to capture your body measurements</p>
+        <p class="text-xl text-gray-600">Position yourself correctly and we'll capture automatically!</p>
     </div>
 
     <!-- Progress Steps -->
     <div class="mb-12">
-        <div class="flex items-center justify-center space-x-4">
+        <div class="flex items-center justify-center space-x-2 md:space-x-4 flex-wrap gap-y-4">
             <div id="step1" class="flex items-center">
                 <div class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
                     1</div>
                 <span class="ml-2 font-medium text-gray-900">Front View</span>
             </div>
-            <div class="w-16 h-1 bg-gray-300"></div>
+            <div class="w-8 md:w-16 h-1 bg-gray-300"></div>
             <div id="step2" class="flex items-center opacity-50">
                 <div
                     class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">
                     2</div>
-                <span class="ml-2 font-medium text-gray-600">Side View (Optional)</span>
+                <span class="ml-2 font-medium text-gray-600">Side View</span>
             </div>
-            <div class="w-16 h-1 bg-gray-300"></div>
+            <div class="w-8 md:w-16 h-1 bg-gray-300"></div>
             <div id="step3" class="flex items-center opacity-50">
                 <div
                     class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">
                     3</div>
+                <span class="ml-2 font-medium text-gray-600">Skin Tone</span>
+            </div>
+            <div class="w-8 md:w-16 h-1 bg-gray-300"></div>
+            <div id="step4" class="flex items-center opacity-50">
+                <div
+                    class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">
+                    4</div>
                 <span class="ml-2 font-medium text-gray-600">Processing</span>
             </div>
         </div>
@@ -44,13 +51,43 @@
                 <canvas id="canvas" class="hidden"></canvas>
                 <canvas id="overlay-canvas" class="absolute inset-0 pointer-events-none w-full h-full"></canvas>
 
-                <!-- Visual Guide Overlay -->
-                <div id="visual-guide"
-                    class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-70">
+                <!-- Visual Guide Overlay - Full Body -->
+                <div id="visual-guide-body"
+                    class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-70 transition-all duration-300">
                     <!-- Head Guide -->
-                    <div class="w-32 h-40 border-4 border-dashed border-white/70 rounded-full mb-2"></div>
+                    <div id="head-guide"
+                        class="w-32 h-40 border-4 border-dashed border-white/70 rounded-full mb-2 transition-colors duration-300">
+                    </div>
                     <!-- Body Guide -->
-                    <div class="w-80 h-96 border-4 border-dashed border-white/70 rounded-3xl rounded-t-lg"></div>
+                    <div id="body-guide"
+                        class="w-80 h-96 border-4 border-dashed border-white/70 rounded-3xl rounded-t-lg transition-colors duration-300">
+                    </div>
+                </div>
+
+                <!-- Visual Guide Overlay - Face/Selfie for Skin Tone -->
+                <div id="visual-guide-face"
+                    class="hidden absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-70 transition-all duration-300">
+                    <!-- Face Circle Guide -->
+                    <div id="face-guide"
+                        class="w-64 h-80 border-4 border-dashed border-amber-400/80 rounded-full transition-colors duration-300">
+                    </div>
+                    <p class="text-amber-400 font-bold mt-4 text-lg bg-black/40 px-4 py-2 rounded-lg">📱 Come close!
+                        Fill the circle with your face</p>
+                </div>
+
+                <!-- Countdown Overlay -->
+                <div id="countdown-overlay"
+                    class="hidden absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+                    <div class="text-center">
+                        <div id="countdown-number" class="text-9xl font-black text-white drop-shadow-2xl animate-pulse">
+                        </div>
+                        <p class="text-2xl font-bold text-white mt-4 bg-green-600/80 px-6 py-2 rounded-full">Hold still!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Capture Flash Effect -->
+                <div id="capture-flash" class="hidden absolute inset-0 bg-white pointer-events-none z-50 animate-flash">
                 </div>
 
                 <!-- Real-time Status Panel -->
@@ -60,6 +97,17 @@
                         <div id="status-indicator" class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
                         <span id="status-text" class="font-medium">Initializing camera...</span>
                     </div>
+                </div>
+
+                <!-- Auto-Capture Progress Bar -->
+                <div id="auto-capture-bar" class="hidden absolute bottom-4 left-4 right-4 pointer-events-none">
+                    <div class="bg-black/50 rounded-full p-1">
+                        <div id="capture-progress"
+                            class="h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-100"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-center text-white text-sm mt-2 font-medium">Auto-capturing when position is
+                        correct...</p>
                 </div>
 
                 <!-- Loading spinner -->
@@ -76,26 +124,30 @@
 
         <!-- Instructions -->
         <div id="instructions" class="bg-indigo-50 rounded-xl p-6 mb-6">
-            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Instructions:</h3>
+            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Step 1: Front View (Auto-Capture)</h3>
             <ul class="space-y-2 text-indigo-800">
                 <li>✓ Stand 2-3 meters away from the camera</li>
-                <li>✓ Ensure your full body is visible in the frame</li>
+                <li>✓ Align your body with the guide outline</li>
                 <li>✓ Stand straight with arms slightly away from your body</li>
-                <li>✓ Make sure the lighting is good and even</li>
+                <li>⚡ <strong>Image will capture automatically when you're positioned correctly!</strong></li>
             </ul>
         </div>
 
         <!-- Preview Images -->
         <div id="preview-container" class="hidden mb-6">
             <h3 class="font-bold text-lg text-gray-900 mb-3">Captured Images:</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <p class="text-sm text-gray-600 mb-2">Front View</p>
-                    <img id="front-preview" class="w-full rounded-lg border-2 border-gray-300" alt="Front view">
+            <div class="grid grid-cols-3 gap-4">
+                <div id="front-preview-container" class="hidden">
+                    <p class="text-sm text-gray-600 mb-2">Front View ✓</p>
+                    <img id="front-preview" class="w-full rounded-lg border-2 border-green-400" alt="Front view">
                 </div>
                 <div id="side-preview-container" class="hidden">
-                    <p class="text-sm text-gray-600 mb-2">Side View</p>
-                    <img id="side-preview" class="w-full rounded-lg border-2 border-gray-300" alt="Side view">
+                    <p class="text-sm text-gray-600 mb-2">Side View ✓</p>
+                    <img id="side-preview" class="w-full rounded-lg border-2 border-green-400" alt="Side view">
+                </div>
+                <div id="skin-preview-container" class="hidden">
+                    <p class="text-sm text-gray-600 mb-2">Skin Tone ✓</p>
+                    <img id="skin-preview" class="w-full rounded-lg border-2 border-amber-400" alt="Skin tone">
                 </div>
             </div>
         </div>
@@ -106,18 +158,10 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-4 justify-center">
-            <button id="capture-front"
-                class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
-                📸 Capture Front View
-            </button>
-            <button id="capture-side"
-                class="hidden bg-gradient-to-r from-pink-600 to-rose-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
-                📸 Capture Side View
-            </button>
+        <div class="flex gap-4 justify-center flex-wrap">
             <button id="skip-side"
                 class="hidden bg-gray-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition">
-                Skip Side View
+                ⏭️ Skip Side View
             </button>
             <button id="process-scan"
                 class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
@@ -125,11 +169,43 @@
             </button>
             <button id="retake"
                 class="hidden bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 transition">
-                🔄 Retake
+                🔄 Start Over
             </button>
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes flash {
+        0% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    .animate-flash {
+        animation: flash 0.3s ease-out forwards;
+    }
+
+    @keyframes pulse-border {
+
+        0%,
+        100% {
+            border-color: rgba(34, 197, 94, 0.8);
+        }
+
+        50% {
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+    }
+
+    .pulse-border-green {
+        animation: pulse-border 1s ease-in-out infinite;
+    }
+</style>
 
 <script src="{% static 'js/camera.js' %}"></script>
 {% endblock %}
@@ -140,9 +216,16 @@
     let video, canvas, context, overlayCanvas, overlayContext;
     let frontImageData = null;
     let sideImageData = null;
+    let skinImageData = null;
     let currentStep = 1;
     let analysisInterval = null;
     let isAnalyzing = false;
+
+    // Auto-capture variables
+    let goodPoseStartTime = null;
+    const AUTO_CAPTURE_DELAY = 2000; // 2 seconds of good pose before capture
+    let countdownActive = false;
+    let countdownValue = 3;
 
     document.addEventListener('DOMContentLoaded', function () {
         video = document.getElementById('video');
@@ -158,8 +241,6 @@
         initCamera();
 
         // Button event listeners
-        document.getElementById('capture-front').addEventListener('click', captureFront);
-        document.getElementById('capture-side').addEventListener('click', captureSide);
         document.getElementById('skip-side').addEventListener('click', skipSide);
         document.getElementById('process-scan').addEventListener('click', processScan);
         document.getElementById('retake').addEventListener('click', retake);
@@ -196,12 +277,14 @@
     function startRealTimeAnalysis() {
         if (isAnalyzing) return;
         isAnalyzing = true;
+        goodPoseStartTime = null;
 
         updateStatus('warning', 'Align your body with the guide');
+        document.getElementById('auto-capture-bar').classList.remove('hidden');
 
         // Analysis loop
         analysisInterval = setInterval(async () => {
-            if (!isAnalyzing || video.paused || video.ended) return;
+            if (!isAnalyzing || video.paused || video.ended || countdownActive) return;
 
             // Capture low-res frame
             const analysisCanvas = document.createElement('canvas');
@@ -209,18 +292,18 @@
             analysisCanvas.height = 240;
             const ctx = analysisCanvas.getContext('2d');
 
-            // Draw video to canvas (handle mirroring if needed, but for analysis mirror doesn't matter much unless we draw landmarks back)
-            // We mirrored video with CSS, so we should mirror drawing if we want natural feedback? 
-            // Standard webcam is usually mirrored for user.
             ctx.drawImage(video, 0, 0, 320, 240);
 
             const imageData = analysisCanvas.toDataURL('image/jpeg', 0.6);
 
             try {
+                // Send mode based on current step (face mode for skin tone step)
+                const analysisMode = currentStep === 3 ? 'face' : 'body';
+
                 const response = await fetch('{% url "fitting_system:analyze_frame" %}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: imageData })
+                    body: JSON.stringify({ image: imageData, mode: analysisMode })
                 });
 
                 const result = await response.json();
@@ -229,22 +312,27 @@
             } catch (error) {
                 console.error("Analysis frame error:", error);
             }
-        }, 500); // 2 FPS to reduce load
+        }, 300); // ~3 FPS for smoother feedback
     }
 
     function stopAnalysis() {
         isAnalyzing = false;
+        goodPoseStartTime = null;
         if (analysisInterval) {
             clearInterval(analysisInterval);
             analysisInterval = null;
         }
         overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        document.getElementById('auto-capture-bar').classList.add('hidden');
+        document.getElementById('capture-progress').style.width = '0%';
     }
 
     function handleAnalysisResult(result) {
         if (!result.detected) {
-            updateStatus('error', 'No person detected');
+            updateStatus('error', 'No person detected - step into frame');
             clearLandmarks();
+            goodPoseStartTime = null;
+            updateCaptureProgress(0);
             return;
         }
 
@@ -254,33 +342,124 @@
         if (result.landmarks && result.landmarks.length > 0) {
             drawLandmarks(result.landmarks);
         }
+
+        // Handle auto-capture logic
+        if (result.status === 'good') {
+            if (!goodPoseStartTime) {
+                goodPoseStartTime = Date.now();
+            }
+
+            const elapsed = Date.now() - goodPoseStartTime;
+            const progress = Math.min(100, (elapsed / AUTO_CAPTURE_DELAY) * 100);
+            updateCaptureProgress(progress);
+
+            // Update guide color to green
+            updateGuideColor('good');
+
+            if (elapsed >= AUTO_CAPTURE_DELAY && !countdownActive) {
+                // Start countdown
+                startCountdown();
+            }
+        } else {
+            // Reset if pose is not good
+            goodPoseStartTime = null;
+            updateCaptureProgress(0);
+            updateGuideColor(result.status);
+        }
+    }
+
+    function updateCaptureProgress(progress) {
+        document.getElementById('capture-progress').style.width = progress + '%';
+    }
+
+    function updateGuideColor(status) {
+        const headGuide = document.getElementById('head-guide');
+        const bodyGuide = document.getElementById('body-guide');
+        const faceGuide = document.getElementById('face-guide');
+
+        // Reset classes
+        [headGuide, bodyGuide, faceGuide].forEach(el => {
+            if (el) {
+                el.classList.remove('border-green-400', 'border-yellow-400', 'border-red-400', 'pulse-border-green', 'border-white/70', 'border-amber-400/80');
+            }
+        });
+
+        if (status === 'good') {
+            headGuide.classList.add('border-green-400', 'pulse-border-green');
+            bodyGuide.classList.add('border-green-400', 'pulse-border-green');
+            faceGuide.classList.add('border-green-400', 'pulse-border-green');
+        } else if (status === 'warning') {
+            headGuide.classList.add('border-yellow-400');
+            bodyGuide.classList.add('border-yellow-400');
+            faceGuide.classList.add('border-amber-400/80');
+        } else {
+            headGuide.classList.add('border-white/70');
+            bodyGuide.classList.add('border-white/70');
+            faceGuide.classList.add('border-amber-400/80');
+        }
+    }
+
+    function startCountdown() {
+        countdownActive = true;
+        countdownValue = 3;
+
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownNumber = document.getElementById('countdown-number');
+
+        countdownOverlay.classList.remove('hidden');
+        countdownNumber.textContent = countdownValue;
+
+        const countdownInterval = setInterval(() => {
+            countdownValue--;
+
+            if (countdownValue > 0) {
+                countdownNumber.textContent = countdownValue;
+            } else {
+                clearInterval(countdownInterval);
+                countdownOverlay.classList.add('hidden');
+                triggerAutoCapture();
+            }
+        }, 1000);
+    }
+
+    function triggerAutoCapture() {
+        // Show flash effect
+        const flash = document.getElementById('capture-flash');
+        flash.classList.remove('hidden');
+        setTimeout(() => flash.classList.add('hidden'), 300);
+
+        // Capture based on current step
+        if (currentStep === 1) {
+            captureAutoFront();
+        } else if (currentStep === 2) {
+            captureAutoSide();
+        } else if (currentStep === 3) {
+            captureAutoSkin();
+        }
+
+        countdownActive = false;
     }
 
     function updateStatus(status, message) {
         const badge = document.getElementById('status-badge');
         const indicator = document.getElementById('status-indicator');
         const text = document.getElementById('status-text');
-        const guide = document.getElementById('visual-guide');
 
         text.textContent = message;
 
         // Reset classes
         indicator.className = 'w-3 h-3 rounded-full animate-pulse transition-colors duration-300';
         badge.className = 'backdrop-blur-md px-6 py-2 rounded-full flex items-center gap-2 transition-all duration-300 border-2';
-        guide.className = 'absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300';
 
         if (status === 'good') {
             indicator.classList.add('bg-green-400');
             badge.classList.add('bg-green-900/60', 'border-green-400');
-            guide.classList.add('opacity-30'); // Fade guide when good
         } else if (status === 'warning') {
             indicator.classList.add('bg-yellow-400');
             badge.classList.add('bg-yellow-900/60', 'border-yellow-400');
-            guide.classList.add('opacity-70');
         } else {
             indicator.classList.add('bg-red-500');
             badge.classList.add('bg-red-900/60', 'border-red-500');
-            guide.classList.add('opacity-90');
         }
     }
 
@@ -291,107 +470,150 @@
         overlayContext.strokeStyle = '#00FF00';
         overlayContext.lineWidth = 2;
 
-        // Landmarks are normalized (0-1). Scale to canvas.
-        // NOTE: Video is mirrored in CSS (scale-x-[-1]).
-        // To match landmarks to mirrored video, we need to flip X.
-
         landmarks.forEach(lm => {
-            const x = (1 - lm.x) * overlayCanvas.width; // Flip X
+            const x = (1 - lm.x) * overlayCanvas.width; // Flip X for mirrored video
             const y = lm.y * overlayCanvas.height;
 
             overlayContext.beginPath();
             overlayContext.arc(x, y, 4, 0, 2 * Math.PI);
             overlayContext.fill();
         });
-
-        // Can add skeleton lines here if desired
     }
 
     function clearLandmarks() {
         overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     }
 
-    function captureFront() {
-        stopAnalysis(); // Stop analyzing when captured
+    function captureImage() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-        captureImage('front');
-        frontImageData = getImageData();
+        context.save();
+        context.scale(-1, 1);
+        context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        context.restore();
+
+        return canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    function captureAutoFront() {
+        stopAnalysis();
+
+        frontImageData = captureImage();
 
         // Show preview
         document.getElementById('front-preview').src = frontImageData;
         document.getElementById('preview-container').classList.remove('hidden');
+        document.getElementById('front-preview-container').classList.remove('hidden');
 
-        // Update UI
-        document.getElementById('capture-front').classList.add('hidden');
-        document.getElementById('capture-side').classList.remove('hidden');
+        // Show skip side button
         document.getElementById('skip-side').classList.remove('hidden');
-        document.getElementById('visual-guide').classList.add('hidden'); // Hide guide
 
         // Update step
         updateStep(2);
 
         // Update instructions
         document.getElementById('instructions').innerHTML = `
-            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Optional: Side View</h3>
+            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Step 2: Side View (Auto-Capture)</h3>
             <ul class="space-y-2 text-indigo-800">
                 <li>✓ Turn 90 degrees to your right</li>
                 <li>✓ Stand in the same position</li>
                 <li>✓ Keep your arms at your sides</li>
-                <li>✓ Or skip this step to continue</li>
+                <li>⚡ <strong>Image will capture automatically!</strong></li>
+                <li>Or click "Skip Side View" to continue</li>
             </ul>
         `;
+
+        // Restart analysis for side view
+        setTimeout(() => startRealTimeAnalysis(), 500);
     }
 
-    function captureSide() {
-        captureImage('side');
-        sideImageData = getImageData();
+    function captureAutoSide() {
+        stopAnalysis();
+
+        sideImageData = captureImage();
 
         // Show preview
         document.getElementById('side-preview').src = sideImageData;
         document.getElementById('side-preview-container').classList.remove('hidden');
 
-        // Update UI
-        document.getElementById('capture-side').classList.add('hidden');
-        document.getElementById('skip-side').classList.add('hidden');
-        document.getElementById('process-scan').classList.remove('hidden');
-        document.getElementById('retake').classList.remove('hidden');
-
-        // Update step
-        updateStep(3);
+        // Move to Skin Tone step
+        moveToSkinToneStep();
     }
 
     function skipSide() {
-        // Update UI
-        document.getElementById('capture-side').classList.add('hidden');
+        stopAnalysis();
         document.getElementById('skip-side').classList.add('hidden');
+        moveToSkinToneStep();
+    }
+
+    function moveToSkinToneStep() {
+        // Hide skip button
+        document.getElementById('skip-side').classList.add('hidden');
+
+        // Switch visual guides
+        document.getElementById('visual-guide-body').classList.add('hidden');
+        document.getElementById('visual-guide-face').classList.remove('hidden');
+
+        // Update step
+        updateStep(3);
+
+        // Update instructions
+        document.getElementById('instructions').innerHTML = `
+            <h3 class="font-bold text-lg text-amber-700 mb-3">🎨 Step 3: Skin Tone Analysis (Selfie Mode)</h3>
+            <ul class="space-y-2 text-amber-800">
+                <li>📱 <strong>Come close to the camera like a selfie!</strong></li>
+                <li>✓ Your face should fill most of the circle</li>
+                <li>✓ Position your face in the center of the guide</li>
+                <li>✓ Ensure good, natural lighting on your face</li>
+                <li>⚡ <strong>Image will capture automatically when you're close enough!</strong></li>
+            </ul>
+        `;
+
+        // Restart analysis for skin tone
+        setTimeout(() => startRealTimeAnalysis(), 500);
+    }
+
+    function captureAutoSkin() {
+        stopAnalysis();
+
+        skinImageData = captureImage();
+
+        // Show preview
+        document.getElementById('skin-preview').src = skinImageData;
+        document.getElementById('skin-preview-container').classList.remove('hidden');
+
+        // Hide face guide
+        document.getElementById('visual-guide-face').classList.add('hidden');
+
+        // Show process button
         document.getElementById('process-scan').classList.remove('hidden');
         document.getElementById('retake').classList.remove('hidden');
 
         // Update step
-        updateStep(3);
-    }
+        updateStep(4);
 
-    function captureImage(type) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        // Draw mirrored if video is mirrored? 
-        // Video element has transform scale-x-[-1].
-        // context.drawImage draws raw video frame (not mirrored).
-        // If we want captured image to look like what user sees, we should flip it.
+        // Update instructions
+        document.getElementById('instructions').innerHTML = `
+            <h3 class="font-bold text-lg text-emerald-700 mb-3">✨ Step 4: Ready to Process</h3>
+            <ul class="space-y-2 text-emerald-800">
+                <li>✓ All images captured successfully!</li>
+                <li>✓ Click "Process Scan" to analyze your measurements</li>
+                <li>✓ You can also start over if needed</li>
+            </ul>
+        `;
 
-        context.save();
-        context.scale(-1, 1);
-        context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-        context.restore();
-    }
-
-    function getImageData() {
-        return canvas.toDataURL('image/jpeg', 0.9);
+        updateStatus('good', 'Ready to process your scan!');
     }
 
     async function processScan() {
         if (!frontImageData) {
             showError('Please capture at least a front view image.');
+            return;
+        }
+
+        if (!skinImageData) {
+            showError('Please capture a skin tone image.');
             return;
         }
 
@@ -407,14 +629,14 @@
                 },
                 body: JSON.stringify({
                     front_image: frontImageData,
-                    side_image: sideImageData
+                    side_image: sideImageData,
+                    skin_image: skinImageData
                 })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                // Redirect to recommendations page
                 window.location.href = `/recommendations/${data.session_id}/`;
             } else {
                 showError(data.error || 'Processing failed. Please try again.');
@@ -433,50 +655,55 @@
         // Reset everything
         frontImageData = null;
         sideImageData = null;
+        skinImageData = null;
         currentStep = 1;
+        goodPoseStartTime = null;
+        countdownActive = false;
 
         // Reset UI
         document.getElementById('preview-container').classList.add('hidden');
-        document.getElementById('capture-front').classList.remove('hidden');
-        document.getElementById('capture-side').classList.add('hidden');
+        document.getElementById('front-preview-container').classList.add('hidden');
+        document.getElementById('side-preview-container').classList.add('hidden');
+        document.getElementById('skin-preview-container').classList.add('hidden');
         document.getElementById('skip-side').classList.add('hidden');
         document.getElementById('process-scan').classList.add('hidden');
         document.getElementById('retake').classList.add('hidden');
         document.getElementById('error-message').classList.add('hidden');
-        document.getElementById('visual-guide').classList.remove('hidden'); // Show guide again
+
+        // Reset visual guides
+        document.getElementById('visual-guide-body').classList.remove('hidden');
+        document.getElementById('visual-guide-face').classList.add('hidden');
 
         // Reset instructions
         document.getElementById('instructions').innerHTML = `
-            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Instructions:</h3>
+            <h3 class="font-bold text-lg text-indigo-900 mb-3">📸 Step 1: Front View (Auto-Capture)</h3>
             <ul class="space-y-2 text-indigo-800">
                 <li>✓ Stand 2-3 meters away from the camera</li>
-                <li>✓ Ensure your full body is visible in the frame</li>
+                <li>✓ Align your body with the guide outline</li>
                 <li>✓ Stand straight with arms slightly away from your body</li>
-                <li>✓ Make sure the lighting is good and even</li>
+                <li>⚡ <strong>Image will capture automatically when you're positioned correctly!</strong></li>
             </ul>
         `;
 
         updateStep(1);
-
-        // Restart analysis
         startRealTimeAnalysis();
     }
 
     function updateStep(step) {
         currentStep = step;
+        const totalSteps = 4;
 
-        // Reset all steps
-        for (let i = 1; i <= 3; i++) {
+        for (let i = 1; i <= totalSteps; i++) {
             const stepEl = document.getElementById(`step${i}`);
             if (i < step) {
                 stepEl.classList.remove('opacity-50');
-                stepEl.querySelector('div').classList.remove('bg-gray-300', 'text-gray-600');
+                stepEl.querySelector('div').classList.remove('bg-gray-300', 'text-gray-600', 'bg-indigo-600');
                 stepEl.querySelector('div').classList.add('bg-green-500', 'text-white');
                 stepEl.querySelector('span').classList.remove('text-gray-600');
                 stepEl.querySelector('span').classList.add('text-gray-900');
             } else if (i === step) {
                 stepEl.classList.remove('opacity-50');
-                stepEl.querySelector('div').classList.remove('bg-gray-300', 'text-gray-600');
+                stepEl.querySelector('div').classList.remove('bg-gray-300', 'text-gray-600', 'bg-green-500');
                 stepEl.querySelector('div').classList.add('bg-indigo-600', 'text-white');
                 stepEl.querySelector('span').classList.remove('text-gray-600');
                 stepEl.querySelector('span').classList.add('text-gray-900');

@@ -46,6 +46,7 @@ def process_scan(request):
         data = json.loads(request.body)
         front_image_data = data.get('front_image')
         side_image_data = data.get('side_image')
+        skin_image_data = data.get('skin_image')  # Separate skin tone image
         
         if not front_image_data:
             return JsonResponse({'error': 'Front image is required'}, status=400)
@@ -53,6 +54,7 @@ def process_scan(request):
         # Decode base64 images
         front_image = decode_base64_image(front_image_data)
         side_image = decode_base64_image(side_image_data) if side_image_data else None
+        skin_image = decode_base64_image(skin_image_data) if skin_image_data else None
         
         # Estimate body measurements
         measurement_estimator = get_estimator()
@@ -61,9 +63,9 @@ def process_scan(request):
             side_image
         )
         
-        # Analyze skin tone
+        # Analyze skin tone - use dedicated skin image if available, otherwise fall back to front image
         skin_tone_analyzer = SkinToneAnalyzer()
-        skin_tone = skin_tone_analyzer.analyze_skin_tone(front_image)
+        skin_tone = skin_tone_analyzer.analyze_skin_tone(skin_image if skin_image is not None else front_image)
         
         # Create BodyScan record
         body_scan = BodyScan.objects.create(
@@ -100,6 +102,7 @@ def analyze_frame(request):
     try:
         data = json.loads(request.body)
         image_data = data.get('image')
+        mode = data.get('mode', 'body')  # 'body' for full body, 'face' for skin tone selfie
         
         if not image_data:
             return JsonResponse({'error': 'Image is required'}, status=400)
@@ -107,14 +110,99 @@ def analyze_frame(request):
         # Decode image
         image = decode_base64_image(image_data)
         
-        # Analyze pose
-        estimator = get_estimator()
-        result = estimator.analyze_pose(image)
+        if mode == 'face':
+            # Face mode for skin tone - check if face is close and centered
+            result = analyze_face_for_skin_tone(image)
+        else:
+            # Body mode - analyze full body pose
+            estimator = get_estimator()
+            result = estimator.analyze_pose(image)
         
         return JsonResponse(result)
         
     except Exception as e:
         return JsonResponse({'error': str(e), 'detected': False}, status=500)
+
+
+def analyze_face_for_skin_tone(image):
+    """
+    Analyze face position for skin tone capture.
+    Checks if face is close enough and centered.
+    """
+    import cv2
+    
+    h, w = image.shape[:2]
+    
+    # Use OpenCV's face detection (Haar cascade) for quick face detection
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    
+    # Convert to grayscale for face detection
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Detect faces
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+    
+    if len(faces) == 0:
+        return {
+            "detected": False,
+            "message": "No face detected - look at the camera",
+            "status": "error",
+            "quality": 0.0,
+            "landmarks": []
+        }
+    
+    # Get the largest face (closest to camera)
+    largest_face = max(faces, key=lambda f: f[2] * f[3])
+    x, y, fw, fh = largest_face
+    
+    # Calculate face center
+    face_center_x = x + fw / 2
+    face_center_y = y + fh / 2
+    
+    # Check face size (should be large for close-up selfie)
+    face_area_ratio = (fw * fh) / (w * h)
+    
+    # Check if face is centered
+    center_x_ratio = abs(face_center_x - w / 2) / w
+    center_y_ratio = abs(face_center_y - h / 2) / h
+    
+    # Determine status and message
+    if face_area_ratio < 0.08:
+        # Face is too small - user is too far
+        return {
+            "detected": True,
+            "message": "Move CLOSER to the camera",
+            "status": "warning",
+            "quality": 0.4,
+            "landmarks": []
+        }
+    elif face_area_ratio < 0.15:
+        # Face is medium - could be closer
+        return {
+            "detected": True,
+            "message": "A bit closer for better accuracy",
+            "status": "warning",
+            "quality": 0.6,
+            "landmarks": []
+        }
+    elif center_x_ratio > 0.25 or center_y_ratio > 0.25:
+        # Face is not centered
+        return {
+            "detected": True,
+            "message": "Center your face in the circle",
+            "status": "warning",
+            "quality": 0.7,
+            "landmarks": []
+        }
+    else:
+        # Perfect position!
+        return {
+            "detected": True,
+            "message": "Perfect! Hold still...",
+            "status": "good",
+            "quality": 0.95,
+            "landmarks": []
+        }
 
 
 def recommendations(request, session_id):
