@@ -41,7 +41,7 @@
                     <p class="text-sm text-gray-600">Size: {{ variant.size.name }} | Color: {{ variant.color.name }}</p>
                 </div>
                 <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg font-bold">
-                    {{ variant.inventory.quantity }} left
+                    {{ variant.inventory.quantity|default:0 }} left
                 </span>
             </div>
             {% endfor %}
@@ -105,8 +105,8 @@
                                 <span class="text-sm text-gray-900">{{ variant.color.name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{
-                            variant.inventory.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                            {{ variant.inventory.quantity|default:0 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
                                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -129,8 +129,8 @@
                                 <span class="text-sm text-gray-900">{{ variant.color.name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-yellow-900">{{
-                            variant.inventory.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-yellow-900">
+                            {{ variant.inventory.quantity|default:0 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
                                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">

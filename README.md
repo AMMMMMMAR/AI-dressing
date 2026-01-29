@@ -1,3 +1,4 @@
+i want to make an update in the try virtual fitting what do you suggest for me. for example taking the measurement it can be from 2-3 miter but for the skin tone it is hard to get it from that distance so you can make the skin tone next step taking as a selfy photo, after taking the measurement.
 # Intelligent In-Store Virtual Fitting System
 
 An AI-powered virtual fitting system for men's and women's clothing stores. The system uses computer vision to estimate body measurements and skin tone, then provides intelligent clothing recommendations based on available inventory.
@@ -20,6 +21,40 @@ An AI-powered virtual fitting system for men's and women's clothing stores. The 
 - **AI/CV**: MediaPipe (Pose + Face Detection), OpenCV, NumPy
 - **3D Graphics**: Three.js
 - **Python**: 3.9+
+
+## Quick Start
+
+Get the project running in 5 simple steps:
+
+```bash
+# 1. Create and activate virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1          # Windows PowerShell
+# source venv/bin/activate           # Linux/Mac
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Download MediaPipe model (required for AI features)
+curl -L -o pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task
+
+# 4. Setup database and populate initial data
+python manage.py migrate
+python manage.py populate_data
+
+# 5. Run the development server
+python manage.py runserver
+```
+
+**Access the application at:** http://localhost:8000/
+
+**Optional - Create admin account:**
+```bash
+python manage.py createsuperuser
+```
+Then access admin panel at: http://localhost:8000/admin/
+
+---
 
 ## Installation
 
